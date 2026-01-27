@@ -18,6 +18,8 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: "1.21"
+          # Tạm thời tắt cache để tránh lỗi không tìm thấy go.sum
+          cache: false
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -30,17 +32,17 @@ jobs:
       - name: Build Wails App
         shell: pwsh
         run: |
-          # Thêm Wails vào PATH
+          # Thêm Wails vào PATH hệ thống
           $GP = go env GOPATH
           $env:Path += ";$GP\bin"
 
-          # Build bản Windows
+          # Lệnh build chính thức
           wails build -platform windows/amd64 -clean
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: Wails-Executable
-          # Sử dụng wildcard ** để GitHub tự quét tìm file exe dù nó nằm ở đâu
+          # Tìm tất cả file .exe trong thư mục build/bin
           path: "**/build/bin/*.exe"
           if-no-files-found: error
