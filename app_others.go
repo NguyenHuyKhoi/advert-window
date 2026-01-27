@@ -2,9 +2,6 @@
 
 package main
 
-import "fmt"
+func (a *App) enableAutoStart() {}
 
-// Hàm này sẽ được gọi khi chạy trên macOS hoặc Linux
-func (a *App) enableAutoStart() {
-    fmt.Println("Auto-start is only supported on Windows. Skipping...")
-}
+func (a *App) silentUpdate() {}

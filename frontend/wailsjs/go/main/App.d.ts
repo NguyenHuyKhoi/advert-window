@@ -5,4 +5,6 @@ import {context} from '../models';
 
 export function GetDeviceInfo():Promise<main.DeviceInfo>;
 
+export function GetVersion():Promise<number>;
+
 export function Startup(arg1:context.Context):Promise<void>;

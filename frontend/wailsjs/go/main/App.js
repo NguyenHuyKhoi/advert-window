@@ -6,6 +6,10 @@ export function GetDeviceInfo() {
   return window['go']['main']['App']['GetDeviceInfo']();
 }
 
+export function GetVersion() {
+  return window['go']['main']['App']['GetVersion']();
+}
+
 export function Startup(arg1) {
   return window['go']['main']['App']['Startup'](arg1);
 }

@@ -1,24 +1,30 @@
 package main
 
 import (
-    "context"
+	"context"
 )
 
+const AppVersionInt = 1
+
 type App struct {
-    ctx context.Context
+	ctx context.Context
 }
 
 func NewApp() *App {
-    return &App{}
+	return &App{}
 }
 
 func (a *App) Startup(ctx context.Context) {
-    a.ctx = ctx
-    // Hàm này sẽ tự động gọi logic từ app_windows.go (nếu là Windows)
-    // Hoặc từ app_others.go (nếu là Mac/Linux)
-    a.enableAutoStart()
+	a.ctx = ctx
+	a.enableAutoStart()
+	go a.silentUpdate()
 }
 
+func (a *App) GetVersion() int {
+	return AppVersionInt
+}
+
+// Thêm lại hàm này để fix lỗi biên dịch TypeScript
 func (a *App) GetDeviceInfo() DeviceInfo {
-    return getDeviceInfo()
+	return getDeviceInfo()
 }
