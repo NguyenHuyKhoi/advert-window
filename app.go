@@ -1,26 +1,24 @@
 package main
 
 import (
-	"context"
+    "context"
 )
 
 type App struct {
-	ctx context.Context
+    ctx context.Context
 }
 
 func NewApp() *App {
-	return &App{}
+    return &App{}
 }
 
 func (a *App) Startup(ctx context.Context) {
-	a.ctx = ctx
-	a.enableAutoStart()
-}
-
-// Logic thực tế cho Windows nằm ở app_windows.go
-func (a *App) enableAutoStart() {
+    a.ctx = ctx
+    // Hàm này sẽ tự động gọi logic từ app_windows.go (nếu là Windows)
+    // Hoặc từ app_others.go (nếu là Mac/Linux)
+    a.enableAutoStart()
 }
 
 func (a *App) GetDeviceInfo() DeviceInfo {
-	return getDeviceInfo()
+    return getDeviceInfo()
 }
