@@ -5,7 +5,7 @@ frontend/dist/
 # --- Go ---
 go.sum
 vendor/
-*.exe
+
 *.exe~
 *.dll
 *.so
