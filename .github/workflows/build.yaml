@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - main
-    tags:
-      - "v*"
   workflow_dispatch:
 
 jobs:
@@ -15,37 +13,33 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # Đảm bảo lấy toàn bộ lịch sử để build chính xác
 
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
           go-version: "1.21"
+          # Chỉ định file go.sum nằm trong thư mục con để cache
+          cache-dependency-path: advert-laptop/go.sum
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "18"
-          cache: "npm"
-          cache-dependency-path: frontend/package-lock.json
 
       - name: Install Wails CLI
         run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
 
-      - name: Debug Current Directory
-        run: |
-          echo "Current Path: $(Get-Location)"
-          dir
-          # Kiểm tra xem file wails.json có thực sự tồn tại ở đây không
-          Test-Path wails.json
-
       - name: Build Wails App
-        shell: pwsh
+        # Quan trọng: Trỏ vào đúng thư mục chứa wails.json
+        working-directory: ./advert-laptop
         run: |
-          # Thêm đường dẫn binary của Go vào PATH hệ thống của máy ảo
           $GP = go env GOPATH
           $env:Path += ";$GP\bin"
-
-          # Chạy lệnh build trực tiếp tại thư mục gốc
           wails build -platform windows/amd64 -clean
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Wails-Executable
+          # Trỏ đường dẫn lấy file exe từ thư mục con
+          path: advert-laptop/build/bin/*.exe
