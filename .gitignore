@@ -1,0 +1,32 @@
+# --- Wails Binaries ---
+build/bin/
+frontend/dist/
+
+# --- Go ---
+go.sum
+vendor/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# --- Node.js (Frontend) ---
+frontend/node_modules/
+frontend/.eslintcache
+frontend/build/
+.DS_Store
+node_modules/
+# --- IDEs ---
+.vscode/
+.idea/
+*.swp
+*.out
+
+# --- Wails Specific ---
+wails.json
+# (Giữ lại wails.json nếu bạn muốn chia sẻ cấu hình project cho team, 
+# nhưng nếu bạn tùy chỉnh build riêng biệt thì có thể ignore)
+
+# --- Logs ---
+*.log
