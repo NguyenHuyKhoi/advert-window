@@ -5,7 +5,7 @@ import (
 )
 
 const (
-	AppVersionInt    = 2
+	AppVersionInt    = 3
 	BASE_URL         = "https://package-shepherd-knew-proposals.trycloudflare.com/api"
 	CHECK_UPDATE_URL = BASE_URL + "/app-settings/laptop"
 )
