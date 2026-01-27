@@ -24,7 +24,6 @@ node_modules/
 *.out
 
 # --- Wails Specific ---
-wails.json
 # (Giữ lại wails.json nếu bạn muốn chia sẻ cấu hình project cho team, 
 # nhưng nếu bạn tùy chỉnh build riêng biệt thì có thể ignore)
 
