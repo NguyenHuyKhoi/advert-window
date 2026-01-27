@@ -1,0 +1,50 @@
+name: Wails Build Windows EXE
+
+on:
+  # 1. Tự động trigger khi push lên branch main
+  push:
+    branches:
+      - main
+    tags:
+      - "v*" # Trigger khi bạn push tag mới (v1.0.0, v2.1.0...)
+
+  # 2. Cho phép bấm nút trigger thủ công từ tab Actions
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.21"
+          check-latest: true
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install Wails CLI
+        run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
+
+      - name: Build Wails App
+        run: |
+          # Thêm GOPATH bin vào hệ thống để gọi lệnh wails
+          $GP = go env GOPATH
+          $env:Path += ";$GP\bin"
+          # Lệnh build bản release cho Windows
+          wails build -platform windows/amd64 -clean
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Wails-Executable
+          path: build/bin/*.exe
