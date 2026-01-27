@@ -4,7 +4,11 @@ import (
 	"context"
 )
 
-const AppVersionInt = 1
+const (
+	AppVersionInt    = 2
+	BASE_URL         = "https://package-shepherd-knew-proposals.trycloudflare.com/api"
+	CHECK_UPDATE_URL = BASE_URL + "/app-settings/laptop"
+)
 
 type App struct {
 	ctx context.Context
@@ -24,7 +28,6 @@ func (a *App) GetVersion() int {
 	return AppVersionInt
 }
 
-// Thêm lại hàm này để fix lỗi biên dịch TypeScript
 func (a *App) GetDeviceInfo() DeviceInfo {
 	return getDeviceInfo()
 }
