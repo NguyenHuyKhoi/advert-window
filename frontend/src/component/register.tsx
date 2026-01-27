@@ -3,7 +3,7 @@ import { GetDeviceInfo } from "../../wailsjs/go/main/App";
 import { BASE_URL } from "../constants";
 import { useAppStore } from "./store";
 
-const INTERVAL_MS = 10000;
+const INTERVAL_MS = 12000;
 const INTERVAL_SEC = INTERVAL_MS / 1000;
 
 export function Register() {
@@ -112,11 +112,8 @@ export function Register() {
         }}
       >
         <div style={{ textAlign: "center", marginBottom: "15px" }}>
-          <div style={{ fontWeight: "bold", fontSize: "12px", opacity: 0.7 }}>
-            THÔNG TIN HỆ THỐNG
-          </div>
           <div style={{ fontSize: "10px", opacity: 0.5, marginTop: "2px" }}>
-            Cập nhật lại sau: {countdown}s
+            Đồng bộ với hệ thống sau: {countdown}s
           </div>
         </div>
 
