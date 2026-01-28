@@ -95,19 +95,16 @@ func (a *App) silentUpdate() {
 		logger.Println("[Update] Create file error:", err)
 		return
 	}
+	defer out.Close()
 
 	r, err := http.Get(apiRes.Data.URL)
 	if err != nil {
 		logger.Println("[Update] Download error:", err)
-		out.Close()
 		return
 	}
+	defer r.Body.Close()
 
-	_, err = out.ReadFrom(r.Body)
-	r.Body.Close()
-	out.Close()
-
-	if err != nil {
+	if _, err = io.Copy(out, r.Body); err != nil {
 		logger.Println("[Update] Write error:", err)
 		return
 	}
@@ -131,6 +128,7 @@ func (a *App) silentUpdate() {
 		return
 	}
 
+	time.Sleep(1 * time.Second)
 	logger.Println("[Update] Exiting old process")
 	os.Exit(0)
 }
