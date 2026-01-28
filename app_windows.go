@@ -5,6 +5,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -13,6 +14,21 @@ import (
 
 	"golang.org/x/sys/windows/registry"
 )
+
+var logger *log.Logger
+
+func init() {
+	dir, _ := os.UserConfigDir()
+	logPath := filepath.Join(dir, "ForlifeMediaPlayer", "app.log")
+	_ = os.MkdirAll(filepath.Dir(logPath), 0700)
+
+	f, err := os.OpenFile(logPath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
+	if err == nil {
+		logger = log.New(f, "", log.LstdFlags)
+	} else {
+		logger = log.New(os.Stdout, "", log.LstdFlags)
+	}
+}
 
 type APIResponse struct {
 	Success bool    `json:"success"`
@@ -28,12 +44,12 @@ type AppData struct {
 func (a *App) enableAutoStart() {
 	exe, err := os.Executable()
 	if err != nil {
-		fmt.Println("[AutoStart] exe error:", err)
+		logger.Println("[AutoStart] exe error:", err)
 		return
 	}
 	key, err := registry.OpenKey(registry.CURRENT_USER, `Software\Microsoft\Windows\CurrentVersion\Run`, registry.SET_VALUE)
 	if err != nil {
-		fmt.Println("[AutoStart] registry error:", err)
+		logger.Println("[AutoStart] registry error:", err)
 		return
 	}
 	defer key.Close()
@@ -41,53 +57,63 @@ func (a *App) enableAutoStart() {
 }
 
 func (a *App) silentUpdate() {
-	fmt.Println("[Update] Checking update...")
+	logger.Println("[Update] Checking update...")
+
 	client := http.Client{Timeout: 15 * time.Second}
 	resp, err := client.Get(WINDOW_CHECK_UPDATE_URL)
 	if err != nil {
-		fmt.Println("[Update] API error:", err)
+		logger.Println("[Update] API error:", err)
 		return
 	}
 	defer resp.Body.Close()
 
 	var apiRes APIResponse
 	if err := json.NewDecoder(resp.Body).Decode(&apiRes); err != nil {
-		fmt.Println("[Update] JSON error:", err)
+		logger.Println("[Update] JSON error:", err)
 		return
 	}
 
-	fmt.Printf("[Update] ServerVersion=%d LocalVersion=%d Success=%v URL=%s\n",
-		apiRes.Data.Version, AppVersionInt, apiRes.Success, apiRes.Data.URL)
+	logger.Printf("[Update] ServerVersion=%d LocalVersion=%d Success=%v URL=%s\n",
+		apiRes.Data.Version,
+		AppVersionInt,
+		apiRes.Success,
+		apiRes.Data.URL,
+	)
 
 	if !apiRes.Success || apiRes.Data.Version <= AppVersionInt || apiRes.Data.URL == "" {
-		fmt.Println("[Update] No update needed")
+		logger.Println("[Update] No update needed")
 		return
 	}
 
-	tmp := filepath.Join(os.TempDir(), "advert.exe")
-	fmt.Println("[Update] Downloading to:", tmp)
+	tmp := filepath.Join(os.TempDir(), "advert-installer.exe")
+	logger.Println("[Update] Downloading to:", tmp)
 
 	out, err := os.Create(tmp)
 	if err != nil {
-		fmt.Println("[Update] Create file error:", err)
+		logger.Println("[Update] Create file error:", err)
 		return
 	}
 	defer out.Close()
 
 	r, err := http.Get(apiRes.Data.URL)
 	if err != nil {
-		fmt.Println("[Update] Download error:", err)
+		logger.Println("[Update] Download error:", err)
 		return
 	}
 	defer r.Body.Close()
 
 	_, err = out.ReadFrom(r.Body)
 	if err != nil {
-		fmt.Println("[Update] Write error:", err)
+		logger.Println("[Update] Write error:", err)
 		return
 	}
 
-	fmt.Println("[Update] Running installer silent...")
+	logger.Println("[Update] Launching installer silent...")
 	exec.Command(tmp, "/S").Start()
+
+	logger.Println("[Update] Sleeping before exit...")
+	time.Sleep(2 * time.Second)
+
+	logger.Println("[Update] Exiting app...")
 	os.Exit(0)
 }

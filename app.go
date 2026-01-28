@@ -5,7 +5,7 @@ import (
 )
 
 const (
-	AppVersionInt           = 2
+	AppVersionInt           = 1
 	BASE_URL                = "https://idle-income-encyclopedia-procedures.trycloudflare.com/api"
 	WINDOW_CHECK_UPDATE_URL = BASE_URL + "/app-settings/window"
 )
