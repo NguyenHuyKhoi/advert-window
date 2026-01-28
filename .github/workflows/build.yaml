@@ -46,5 +46,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Wails-Installer
-          path: build/bin/*Setup*.exe
+          path: build/bin/*.exe
           if-no-files-found: error
