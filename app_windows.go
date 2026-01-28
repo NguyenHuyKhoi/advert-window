@@ -4,6 +4,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -20,7 +21,6 @@ func init() {
 	dir, _ := os.UserConfigDir()
 	logPath := filepath.Join(dir, "ForlifeMediaPlayer", "app.log")
 	_ = os.MkdirAll(filepath.Dir(logPath), 0700)
-
 	f, err := os.OpenFile(logPath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
 	if err == nil {
 		logger = log.New(f, "", log.LstdFlags)
@@ -72,7 +72,7 @@ func (a *App) silentUpdate() {
 		return
 	}
 
-	logger.Printf("[Update] ServerVersion=%d LocalVersion=%d Success=%v URL=%s\n",
+	logger.Printf("[Update] Server=%d Local=%d Success=%v URL=%s\n",
 		apiRes.Data.Version,
 		AppVersionInt,
 		apiRes.Success,
@@ -107,12 +107,24 @@ func (a *App) silentUpdate() {
 		return
 	}
 
-	logger.Println("[Update] Launching installer silent...")
-	exec.Command(tmp, "/S").Start()
+	logger.Println("[Update] Running installer silent...")
 
-	logger.Println("[Update] Sleeping before exit...")
-	time.Sleep(5 * time.Second)
+	cmd := exec.Command(tmp, "/S")
+	err = cmd.Start()
+	if err != nil {
+		logger.Println("[Update] Installer launch error:", err)
+		return
+	}
 
-	logger.Println("[Update] Exiting app...")
+	logger.Println("[Update] Waiting installer to finish...")
+	cmd.Wait()
+
+	time.Sleep(500 * time.Millisecond)
+
+	exePath, _ := os.Executable()
+	logger.Println("[Update] Relaunching app:", exePath)
+	exec.Command(exePath).Start()
+
+	logger.Println("[Update] Exiting old process")
 	os.Exit(0)
 }
