@@ -18,7 +18,6 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: "1.21"
-          # Tạm thời tắt cache để tránh lỗi không tìm thấy go.sum
           cache: false
 
       - name: Setup Node.js
@@ -36,13 +35,18 @@ jobs:
           $GP = go env GOPATH
           $env:Path += ";$GP\bin"
 
-          # Lệnh build chính thức
+          # 1. Làm sạch triệt để các file resource trung gian
+          Write-Host "Cleaning up old resources..."
+          if (Test-Path "build/bin") { Remove-Item -Recurse -Force "build/bin" }
+          if (Test-Path "build/windows/icon.res") { Remove-Item -Force "build/windows/icon.res" }
+          if (Test-Path "build/windows/icon.syso") { Remove-Item -Force "build/windows/icon.syso" }
+
+          # 2. Chạy lệnh build chính thức với flag -clean
           wails build -platform windows/amd64 -clean
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: Wails-Executable
-          # Tìm tất cả file .exe trong thư mục build/bin
-          path: "**/build/bin/*.exe"
+          path: "build/bin/*.exe"
           if-no-files-found: error
