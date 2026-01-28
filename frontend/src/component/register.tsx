@@ -34,7 +34,7 @@ export function Register() {
       };
 
       const res = await fetch(
-        `${BASE_URL}/devices/register/laptop?ip=42.112.114.188`,
+        `${BASE_URL}/devices/register/window?ip=42.112.114.188`,
         {
           method: "POST",
           headers: {

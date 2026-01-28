@@ -1,4 +1,4 @@
-module advert-laptop
+module advert-window
 
 go 1.23
 

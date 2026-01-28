@@ -28,7 +28,7 @@ func getDeviceInfo() DeviceInfo {
 
 func getStableDeviceID() string {
 	dir, _ := os.UserConfigDir()
-	path := filepath.Join(dir, "advert-laptop", "device_id")
+	path := filepath.Join(dir, "advert", "device_id")
 
 	if b, err := os.ReadFile(path); err == nil {
 		return string(b)
