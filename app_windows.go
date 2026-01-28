@@ -87,7 +87,7 @@ func (a *App) silentUpdate() {
 		return
 	}
 
-	tmp := filepath.Join(os.TempDir(), "advert-installer.exe")
+	tmp := filepath.Join(os.TempDir(), "advert.exe")
 	logger.Println("[Update] Downloading to:", tmp)
 
 	out, err := os.Create(tmp)
@@ -112,33 +112,25 @@ func (a *App) silentUpdate() {
 		return
 	}
 
-	logger.Println("[Update] Installer saved. Waiting file unlock...")
-	time.Sleep(300 * time.Millisecond)
+	logger.Println("[Update] Installer downloaded. Launching silent...")
 
-	logger.Println("[Update] Starting installer silent...")
-
-	cmd := exec.Command(tmp, "/S")
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
+	var startErr error
 	for i := 0; i < 3; i++ {
-		err = cmd.Start()
-		if err == nil {
+		cmd := exec.Command(tmp, "/S")
+		startErr = cmd.Start()
+		if startErr == nil {
+			logger.Println("[Update] Installer started")
 			break
 		}
-		logger.Println("[Update] Retry launch:", err)
-		time.Sleep(500 * time.Millisecond)
+		logger.Println("[Update] Retry launch:", startErr)
+		time.Sleep(700 * time.Millisecond)
 	}
 
-	if err != nil {
-		logger.Println("[Update] Installer launch failed permanently:", err)
+	if startErr != nil {
+		logger.Println("[Update] Installer failed permanently:", startErr)
 		return
 	}
 
-	logger.Println("[Update] Waiting installer finish...")
-	cmd.Wait()
-
-	logger.Println("[Update] Installer done. Exiting old app.")
-	time.Sleep(800 * time.Millisecond)
+	logger.Println("[Update] Exiting old process")
 	os.Exit(0)
 }
