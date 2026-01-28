@@ -24,8 +24,7 @@ func init() {
 
 	f, err := os.OpenFile(logPath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
 	if err == nil {
-		mw := io.MultiWriter(f, os.Stdout)
-		logger = log.New(mw, "", log.LstdFlags)
+		logger = log.New(io.MultiWriter(f, os.Stdout), "", log.LstdFlags)
 		logger.Println("==== Logger started ====")
 	} else {
 		logger = log.New(os.Stdout, "", log.LstdFlags)
@@ -56,6 +55,7 @@ func (a *App) enableAutoStart() {
 	}
 	defer key.Close()
 	_ = key.SetStringValue("ForlifeMediaPlayer", exe)
+	logger.Println("[AutoStart] Registry updated:", exe)
 }
 
 func (a *App) silentUpdate() {
@@ -95,39 +95,50 @@ func (a *App) silentUpdate() {
 		logger.Println("[Update] Create file error:", err)
 		return
 	}
-	defer out.Close()
 
 	r, err := http.Get(apiRes.Data.URL)
 	if err != nil {
 		logger.Println("[Update] Download error:", err)
+		out.Close()
 		return
 	}
-	defer r.Body.Close()
 
 	_, err = out.ReadFrom(r.Body)
+	r.Body.Close()
+	out.Close()
+
 	if err != nil {
 		logger.Println("[Update] Write error:", err)
 		return
 	}
 
-	logger.Println("[Update] Running installer silent...")
+	logger.Println("[Update] Installer saved. Waiting file unlock...")
+	time.Sleep(300 * time.Millisecond)
+
+	logger.Println("[Update] Starting installer silent...")
 
 	cmd := exec.Command(tmp, "/S")
-	err = cmd.Start()
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	for i := 0; i < 3; i++ {
+		err = cmd.Start()
+		if err == nil {
+			break
+		}
+		logger.Println("[Update] Retry launch:", err)
+		time.Sleep(500 * time.Millisecond)
+	}
+
 	if err != nil {
-		logger.Println("[Update] Installer launch error:", err)
+		logger.Println("[Update] Installer launch failed permanently:", err)
 		return
 	}
 
-	logger.Println("[Update] Waiting installer to finish...")
+	logger.Println("[Update] Waiting installer finish...")
 	cmd.Wait()
 
-	time.Sleep(500 * time.Millisecond)
-
-	exePath, _ := os.Executable()
-	logger.Println("[Update] Relaunching app:", exePath)
-	exec.Command(exePath).Start()
-
-	logger.Println("[Update] Exiting old process")
+	logger.Println("[Update] Installer done. Exiting old app.")
+	time.Sleep(800 * time.Millisecond)
 	os.Exit(0)
 }
