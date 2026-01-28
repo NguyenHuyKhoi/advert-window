@@ -41,14 +41,22 @@ Section
     !insertmacro wails.setShellContext
     !insertmacro wails.webview2runtime
 
+    ; 🔥 Kill running app so exe is not locked
+    nsExec::ExecToLog 'taskkill /IM ${PRODUCT_EXECUTABLE} /F'
+
+    Sleep 800
+
     SetOutPath $INSTDIR
     !insertmacro wails.files
 
     CreateShortcut "$SMPROGRAMS\${INFO_PRODUCTNAME}.lnk" "$INSTDIR\${PRODUCT_EXECUTABLE}"
     CreateShortCut "$DESKTOP\${INFO_PRODUCTNAME}.lnk" "$INSTDIR\${PRODUCT_EXECUTABLE}"
 
-    WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "ForlifeMediaPlayer" "$INSTDIR\${PRODUCT_EXECUTABLE}"
+    ; 🔑 Only installer touches startup registry
+    WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Run" \
+      "ForlifeMediaPlayer" "$INSTDIR\${PRODUCT_EXECUTABLE}"
 
+    ; 🚀 Relaunch new version
     Exec '"$INSTDIR\${PRODUCT_EXECUTABLE}"'
 
     !insertmacro wails.associateFiles

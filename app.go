@@ -5,7 +5,7 @@ import (
 )
 
 const (
-	AppVersionInt           = 3
+	AppVersionInt           = 1
 	BASE_URL                = "https://almost-tend-excitement-kijiji.trycloudflare.com/api"
 	WINDOW_CHECK_UPDATE_URL = BASE_URL + "/app-settings/window"
 )
