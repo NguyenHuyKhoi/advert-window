@@ -1,4 +1,4 @@
-name: Wails Build Windows EXE
+name: Wails Build Windows NSIS
 
 on:
   push:
@@ -28,7 +28,7 @@ jobs:
       - name: Install Wails CLI
         run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
 
-      - name: Build Wails App
+      - name: Build Wails App (NSIS)
         shell: pwsh
         run: |
           $GP = go env GOPATH
@@ -40,11 +40,11 @@ jobs:
           Remove-Item -Force build/windows/*.res -ErrorAction SilentlyContinue
 
           wails doctor
-          wails build -platform windows/amd64 -clean
+          wails build -platform windows/amd64 -nsis -clean
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Wails-Executable
-          path: build/bin/*.exe
+          name: Wails-Installer
+          path: build/bin/*Setup*.exe
           if-no-files-found: error

@@ -6,7 +6,7 @@
   "frontend:build": "npm run build",
   "frontend:dev:watcher": "npm run dev",
   "frontend:dev:serverUrl": "auto",
-  "outputfilename": "advert.exe",
+  "outputfilename": "advert",
   "author": {
     "name": "khoinh1",
     "email": "khoinh1@forlife.vn"
