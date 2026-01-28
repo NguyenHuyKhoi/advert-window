@@ -4,7 +4,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -112,7 +111,7 @@ func (a *App) silentUpdate() {
 	exec.Command(tmp, "/S").Start()
 
 	logger.Println("[Update] Sleeping before exit...")
-	time.Sleep(2 * time.Second)
+	time.Sleep(5 * time.Second)
 
 	logger.Println("[Update] Exiting app...")
 	os.Exit(0)
