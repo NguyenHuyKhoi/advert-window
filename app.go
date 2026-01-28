@@ -6,7 +6,7 @@ import (
 
 const (
     AppVersionInt           = 1
-    BASE_URL                = "https://package-shepherd-knew-proposals.trycloudflare.com/api"
+    BASE_URL                = "https://insurance-energy-whale-describes.trycloudflare.com/api"
     WINDOW_CHECK_UPDATE_URL = BASE_URL + "/app-settings/window"
 )
 
