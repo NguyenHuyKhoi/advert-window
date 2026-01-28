@@ -48,12 +48,14 @@ func (a *App) enableAutoStart() {
 		logger.Println("[AutoStart] exe error:", err)
 		return
 	}
+
 	key, err := registry.OpenKey(registry.CURRENT_USER, `Software\Microsoft\Windows\CurrentVersion\Run`, registry.SET_VALUE)
 	if err != nil {
 		logger.Println("[AutoStart] registry error:", err)
 		return
 	}
 	defer key.Close()
+
 	_ = key.SetStringValue("ForlifeMediaPlayer", exe)
 	logger.Println("[AutoStart] Registry updated:", exe)
 }
@@ -88,47 +90,39 @@ func (a *App) silentUpdate() {
 	}
 
 	tmp := filepath.Join(os.TempDir(), "advert.exe")
-	logger.Println("[Update] Downloading to:", tmp)
+	logger.Println("[Update] Downloading installer to:", tmp)
 
 	out, err := os.Create(tmp)
 	if err != nil {
 		logger.Println("[Update] Create file error:", err)
 		return
 	}
-	defer out.Close()
 
 	r, err := http.Get(apiRes.Data.URL)
 	if err != nil {
 		logger.Println("[Update] Download error:", err)
+		out.Close()
 		return
 	}
-	defer r.Body.Close()
 
-	if _, err = io.Copy(out, r.Body); err != nil {
+	_, err = out.ReadFrom(r.Body)
+	r.Body.Close()
+	out.Close()
+
+	if err != nil {
 		logger.Println("[Update] Write error:", err)
 		return
 	}
 
-	logger.Println("[Update] Installer downloaded. Launching silent...")
+	logger.Println("[Update] Launching installer silent...")
 
-	var startErr error
-	for i := 0; i < 3; i++ {
-		cmd := exec.Command(tmp, "/S")
-		startErr = cmd.Start()
-		if startErr == nil {
-			logger.Println("[Update] Installer started")
-			break
-		}
-		logger.Println("[Update] Retry launch:", startErr)
-		time.Sleep(700 * time.Millisecond)
-	}
-
-	if startErr != nil {
-		logger.Println("[Update] Installer failed permanently:", startErr)
+	cmd := exec.Command(tmp, "/S")
+	err = cmd.Start()
+	if err != nil {
+		logger.Println("[Update] Installer start error:", err)
 		return
 	}
 
-	time.Sleep(1 * time.Second)
-	logger.Println("[Update] Exiting old process")
+	logger.Println("[Update] Installer started. Exiting old app.")
 	os.Exit(0)
 }

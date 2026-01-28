@@ -41,9 +41,6 @@ Section
     !insertmacro wails.setShellContext
     !insertmacro wails.webview2runtime
 
-    ; Kill app cũ nếu đang chạy để tránh file lock
-    ExecWait 'taskkill /IM "${PRODUCT_EXECUTABLE}" /F' $0
-
     SetOutPath $INSTDIR
     !insertmacro wails.files
 
