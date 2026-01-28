@@ -1,6 +1,6 @@
 {
   "$schema": "https://wails.io/schemas/config.v2.json",
-  "name": "advert-window",
+  "name": "Forlife Media Player",
   "frontend:dir": "frontend",
   "frontend:install": "npm install",
   "frontend:build": "npm run build",
