@@ -28,10 +28,10 @@ func (a *App) enableAutoStart() {
 }
 
 func (a *App) silentUpdate() {
-	fmt.Printf("[Update] Checking: %s\n", CHECK_UPDATE_URL)
+	fmt.Printf("[Update] Checking: %s\n", WINDOW_CHECK_UPDATE_URL)
 
 	client := http.Client{Timeout: 15 * time.Second}
-	resp, err := client.Get(CHECK_UPDATE_URL)
+	resp, err := client.Get(WINDOW_CHECK_UPDATE_URL)
 	if err != nil {
 		fmt.Printf("[Update] Request error: %v\n", err)
 		return
@@ -44,7 +44,7 @@ func (a *App) silentUpdate() {
 		return
 	}
 
-	fmt.Printf("[Update] Server response -> success=%v version=%d url=%s\n", apiRes.Success, apiRes.Data.Version, apiRes.Data.URL)
+	fmt.Printf("[Update] Server response -> success=%v version_local=%d version_remote=%d url=%s\n", apiRes.Success, AppVersionInt, apiRes.Data.Version, apiRes.Data.URL)
 
 	if !apiRes.Success || apiRes.Data.Version <= AppVersionInt || apiRes.Data.URL == "" {
 		fmt.Println("[Update] No update needed")

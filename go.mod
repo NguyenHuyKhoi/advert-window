@@ -4,13 +4,11 @@ go 1.23
 
 require (
 	github.com/google/uuid v1.6.0
-	github.com/minio/selfupdate v0.6.0
 	github.com/wailsapp/wails/v2 v2.11.0
 	golang.org/x/sys v0.30.0
 )
 
 require (
-	aead.dev/minisign v0.2.0 // indirect
 	github.com/bep/debounce v1.2.1 // indirect
 	github.com/go-ole/go-ole v1.3.0 // indirect
 	github.com/godbus/dbus/v5 v5.1.0 // indirect

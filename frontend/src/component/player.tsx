@@ -18,7 +18,7 @@ export function Player() {
 
   useEffect(() => {
     if (targetAdvert?.id) {
-      updateAdvertStatus({ id: targetAdvert.id });
+      updateAdvertStatus({ id: targetAdvert.id, volume: 0.5 });
     }
   }, [targetAdvert]);
 
