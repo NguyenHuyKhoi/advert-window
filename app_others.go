@@ -6,11 +6,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
+	"os/exec"
+	"path/filepath"
 	"time"
 )
 
 type APIResponse struct {
 	Success bool    `json:"success"`
+	Status  int     `json:"status"`
 	Data    AppData `json:"data"`
 }
 
@@ -20,38 +24,56 @@ type AppData struct {
 }
 
 func (a *App) enableAutoStart() {
-	fmt.Println("[Mac/Debug] Auto-start logic skipped")
+	fmt.Println("[AutoStart] Skipped on non-Windows")
 }
 
 func (a *App) silentUpdate() {
-	fmt.Printf("[CheckUpdate] Đang gọi API: %s\n", CHECK_UPDATE_URL)
-	
-	client := http.Client{Timeout: 10 * time.Second}
+	fmt.Printf("[Update] Checking: %s\n", CHECK_UPDATE_URL)
+
+	client := http.Client{Timeout: 15 * time.Second}
 	resp, err := client.Get(CHECK_UPDATE_URL)
 	if err != nil {
-		fmt.Printf("[CheckUpdate] Lỗi kết nối: %v\n", err)
+		fmt.Printf("[Update] Request error: %v\n", err)
 		return
 	}
 	defer resp.Body.Close()
 
 	var apiRes APIResponse
 	if err := json.NewDecoder(resp.Body).Decode(&apiRes); err != nil {
-		fmt.Printf("[CheckUpdate] Lỗi giải mã JSON: %v\n", err)
+		fmt.Printf("[Update] JSON decode error: %v\n", err)
 		return
 	}
 
-	// Log toàn bộ dữ liệu nhận được để kiểm tra
-	fmt.Printf("[CheckUpdate] Kết quả từ Server -> Success: %v, Version: %d, URL: %s\n", 
-		apiRes.Success, apiRes.Data.Version, apiRes.Data.URL)
+	fmt.Printf("[Update] Server response -> success=%v version=%d url=%s\n", apiRes.Success, apiRes.Data.Version, apiRes.Data.URL)
 
-	if apiRes.Success && apiRes.Data.Version > AppVersionInt {
-		if apiRes.Data.URL == "" {
-			fmt.Println("[CheckUpdate] CẢNH BÁO: Có version mới nhưng URL trống!")
-		} else {
-			fmt.Printf("[CheckUpdate] Tìm thấy bản cập nhật mới! Server: %d, Local: %d\n", 
-				apiRes.Data.Version, AppVersionInt)
-		}
-	} else {
-		fmt.Println("[CheckUpdate] Hiện tại chưa có bản cập nhật mới.")
+	if !apiRes.Success || apiRes.Data.Version <= AppVersionInt || apiRes.Data.URL == "" {
+		fmt.Println("[Update] No update needed")
+		return
 	}
+
+	tmp := filepath.Join(os.TempDir(), "advert-update")
+	out, err := os.Create(tmp)
+	if err != nil {
+		fmt.Printf("[Update] Create temp file error: %v\n", err)
+		return
+	}
+	defer out.Close()
+
+	r, err := http.Get(apiRes.Data.URL)
+	if err != nil {
+		fmt.Printf("[Update] Download error: %v\n", err)
+		return
+	}
+	defer r.Body.Close()
+
+	_, err = out.ReadFrom(r.Body)
+	if err != nil {
+		fmt.Printf("[Update] Write file error: %v\n", err)
+		return
+	}
+
+	fmt.Printf("[Update] Downloaded installer to %s\n", tmp)
+
+	exec.Command(tmp).Start()
+	os.Exit(0)
 }

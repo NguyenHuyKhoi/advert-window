@@ -113,7 +113,7 @@ export function Register() {
       >
         <div style={{ textAlign: "center", marginBottom: "15px" }}>
           <div style={{ fontSize: "10px", opacity: 0.5, marginTop: "2px" }}>
-            Đồng bộ với hệ thống sau: {countdown}s
+            Đồng bộ với hệ thống sau: {countdown} giây
           </div>
         </div>
 
