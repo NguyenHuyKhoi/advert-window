@@ -1,33 +1,33 @@
 package main
 
 import (
-    "context"
+	"context"
 )
 
 const (
-    AppVersionInt           = 1
-    BASE_URL                = "https://insurance-energy-whale-describes.trycloudflare.com/api"
-    WINDOW_CHECK_UPDATE_URL = BASE_URL + "/app-settings/window"
+	AppVersionInt           = 1
+	BASE_URL                = "https://insurance-energy-whale-describes.trycloudflare.com/api"
+	WINDOW_CHECK_UPDATE_URL = BASE_URL + "/app-settings/window"
 )
 
 type App struct {
-    ctx context.Context
+	ctx context.Context
 }
 
 func NewApp() *App {
-    return &App{}
+	return &App{}
 }
 
 func (a *App) Startup(ctx context.Context) {
-    a.ctx = ctx
-    a.enableAutoStart()
-    go a.silentUpdate()
+	a.ctx = ctx
+	a.enableAutoStart()
+	go a.silentUpdate()
 }
 
 func (a *App) GetVersion() int {
-    return AppVersionInt
+	return AppVersionInt
 }
 
 func (a *App) GetDeviceInfo() DeviceInfo {
-    return getDeviceInfo()
+	return getDeviceInfo()
 }

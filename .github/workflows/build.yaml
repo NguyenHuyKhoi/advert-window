@@ -34,7 +34,6 @@ jobs:
           $GP = go env GOPATH
           $env:Path += ";$GP\bin"
 
-          Write-Host "Cleaning old build artifacts..."
           Remove-Item -Recurse -Force build/bin -ErrorAction SilentlyContinue
           Remove-Item -Force build/windows/*.syso -ErrorAction SilentlyContinue
           Remove-Item -Force build/windows/*.res -ErrorAction SilentlyContinue
