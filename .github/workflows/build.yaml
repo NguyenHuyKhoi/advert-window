@@ -31,22 +31,20 @@ jobs:
       - name: Build Wails App
         shell: pwsh
         run: |
-          # Thêm Wails vào PATH hệ thống
           $GP = go env GOPATH
           $env:Path += ";$GP\bin"
 
-          # 1. Làm sạch triệt để các file resource trung gian
-          Write-Host "Cleaning up old resources..."
-          if (Test-Path "build/bin") { Remove-Item -Recurse -Force "build/bin" }
-          if (Test-Path "build/windows/icon.res") { Remove-Item -Force "build/windows/icon.res" }
-          if (Test-Path "build/windows/icon.syso") { Remove-Item -Force "build/windows/icon.syso" }
+          Write-Host "Cleaning old build artifacts..."
+          Remove-Item -Recurse -Force build/bin -ErrorAction SilentlyContinue
+          Remove-Item -Force build/windows/*.syso -ErrorAction SilentlyContinue
+          Remove-Item -Force build/windows/*.res -ErrorAction SilentlyContinue
 
-          # 2. Chạy lệnh build chính thức với flag -clean
+          wails doctor
           wails build -platform windows/amd64 -clean
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: Wails-Executable
-          path: "build/bin/*.exe"
+          path: build/bin/*.exe
           if-no-files-found: error
