@@ -33,7 +33,7 @@ func main() {
 			screens, _ := wailsRuntime.ScreenGetAll(ctx)
 			if len(screens) > 0 {
 				screen := screens[0]
-				x := screen.Size.Width - appWidth - 10
+				x := screen.Size.Width - appWidth - 12
 				y := screen.Size.Height - appHeight - 60
 				wailsRuntime.WindowSetPosition(ctx, x, y)
 			}
