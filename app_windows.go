@@ -4,6 +4,7 @@ package main
 
 import (
 	"encoding/json"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -20,9 +21,12 @@ func init() {
 	dir, _ := os.UserConfigDir()
 	logPath := filepath.Join(dir, "ForlifeMediaPlayer", "app.log")
 	_ = os.MkdirAll(filepath.Dir(logPath), 0700)
+
 	f, err := os.OpenFile(logPath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
 	if err == nil {
-		logger = log.New(f, "", log.LstdFlags)
+		mw := io.MultiWriter(f, os.Stdout)
+		logger = log.New(mw, "", log.LstdFlags)
+		logger.Println("==== Logger started ====")
 	} else {
 		logger = log.New(os.Stdout, "", log.LstdFlags)
 	}
