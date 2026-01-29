@@ -5,7 +5,7 @@ import (
 )
 
 const (
-	AppVersionInt           = 2
+	AppVersionInt           = 3
 	BASE_URL                = "https://period-plot-portfolio-truly.trycloudflare.com/api"
 	WINDOW_CHECK_UPDATE_URL = BASE_URL + "/app-settings/window"
 )
