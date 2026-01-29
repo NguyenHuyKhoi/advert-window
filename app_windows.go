@@ -99,6 +99,11 @@ func (a *App) silentUpdate() {
 	}
 
 	logger.Println("[Update] Launching installer silent...")
-	exec.Command(tmp, "/S").Start()
+	// Fix: Thêm xử lý lỗi khi chạy command
+	cmd := exec.Command(tmp, "/S")
+	if err := cmd.Start(); err != nil {
+		logger.Println("[Update] Exec error:", err)
+		return
+	}
 	os.Exit(0)
 }

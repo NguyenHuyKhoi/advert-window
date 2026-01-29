@@ -52,9 +52,10 @@ Section
     CreateShortcut "$SMPROGRAMS\${INFO_PRODUCTNAME}.lnk" "$INSTDIR\${PRODUCT_EXECUTABLE}"
     CreateShortCut "$DESKTOP\${INFO_PRODUCTNAME}.lnk" "$INSTDIR\${PRODUCT_EXECUTABLE}"
 
-    ; 🔑 Only installer touches startup registry
+    ; 🔑 FIX: Luôn cập nhật lại đường dẫn khởi động mới nhất.
+    ; Thêm dấu ngoặc kép '"path"' để tránh lỗi đường dẫn có khoảng trắng.
     WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Run" \
-      "ForlifeMediaPlayer" "$INSTDIR\${PRODUCT_EXECUTABLE}"
+      "ForlifeMediaPlayer" '"$INSTDIR\${PRODUCT_EXECUTABLE}"'
 
     ; 🚀 Relaunch new version
     Exec '"$INSTDIR\${PRODUCT_EXECUTABLE}"'
