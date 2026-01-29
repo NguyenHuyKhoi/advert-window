@@ -30,35 +30,39 @@ ManifestDPIAware true
 
 Name "${INFO_PRODUCTNAME}"
 OutFile "..\..\bin\${INFO_PROJECTNAME}-${ARCH}-installer.exe"
-InstallDir "$LOCALAPPDATA\${INFO_COMPANYNAME}\${INFO_PRODUCTNAME}"
+
+; 🔥 FIX: Bỏ INFO_COMPANYNAME, cài thẳng vào thư mục App
+InstallDir "$LOCALAPPDATA\${INFO_PRODUCTNAME}"
+
 ShowInstDetails show
 
 Function .onInit
-   !insertmacro wails.checkArchitecture
+    !insertmacro wails.checkArchitecture
 FunctionEnd
 
 Section
     !insertmacro wails.setShellContext
-    !insertmacro wails.webview2runtime
 
-    ; 🔥 Kill running app so exe is not locked
-    nsExec::ExecToLog 'taskkill /IM ${PRODUCT_EXECUTABLE} /F'
+    ; 🔥 Kill running app (advert.exe) để không bị lock file
+    nsExec::ExecToLog 'taskkill /IM advert.exe /F'
 
     Sleep 800
 
     SetOutPath $INSTDIR
     !insertmacro wails.files
 
-    CreateShortcut "$SMPROGRAMS\${INFO_PRODUCTNAME}.lnk" "$INSTDIR\${PRODUCT_EXECUTABLE}"
-    CreateShortCut "$DESKTOP\${INFO_PRODUCTNAME}.lnk" "$INSTDIR\${PRODUCT_EXECUTABLE}"
+    CreateShortcut "$SMPROGRAMS\${INFO_PRODUCTNAME}.lnk" "$INSTDIR\advert.exe"
+    CreateShortCut "$DESKTOP\${INFO_PRODUCTNAME}.lnk" "$INSTDIR\advert.exe"
 
-    ; 🔑 FIX: Luôn cập nhật lại đường dẫn khởi động mới nhất.
-    ; Thêm dấu ngoặc kép '"path"' để tránh lỗi đường dẫn có khoảng trắng.
+    ; 🔑 FIX AUTO-START: 
+    ; 1. Ghi vào HKCU (Current User)
+    ; 2. Sử dụng đúng tên file advert.exe
+    ; 3. Bọc dấu ngoặc kép '"..."' để xử lý khoảng trắng trong đường dẫn Windows
     WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Run" \
-      "ForlifeMediaPlayer" '"$INSTDIR\${PRODUCT_EXECUTABLE}"'
+      "ForlifeMediaPlayer" '"$INSTDIR\advert.exe"'
 
-    ; 🚀 Relaunch new version
-    Exec '"$INSTDIR\${PRODUCT_EXECUTABLE}"'
+    ; 🚀 Relaunch ngay lập tức sau khi cài/update
+    Exec '"$INSTDIR\advert.exe"'
 
     !insertmacro wails.associateFiles
     !insertmacro wails.associateCustomProtocols
@@ -69,9 +73,10 @@ SectionEnd
 Section "uninstall"
     !insertmacro wails.setShellContext
 
+    ; Xóa Registry khởi động khi gỡ app
     DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "ForlifeMediaPlayer"
 
-    RMDir /r "$AppData\${PRODUCT_EXECUTABLE}"
+    RMDir /r "$AppData\${INFO_PRODUCTNAME}"
     RMDir /r $INSTDIR
 
     Delete "$SMPROGRAMS\${INFO_PRODUCTNAME}.lnk"

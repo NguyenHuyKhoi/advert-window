@@ -73,6 +73,7 @@ func (a *App) silentUpdate() {
 		return
 	}
 
+	// GIỮ NGUYÊN: Tên file tải về là advert.exe trong Temp
 	tmp := filepath.Join(os.TempDir(), "advert.exe")
 	logger.Println("[Update] Downloading installer to:", tmp)
 
@@ -99,10 +100,10 @@ func (a *App) silentUpdate() {
 	}
 
 	logger.Println("[Update] Launching installer silent...")
-	// Fix: Thêm xử lý lỗi khi chạy command
+	// Thực thi bản cài đặt tải về với tham số silent
 	cmd := exec.Command(tmp, "/S")
 	if err := cmd.Start(); err != nil {
-		logger.Println("[Update] Exec error:", err)
+		logger.Println("[Update] Start error:", err)
 		return
 	}
 	os.Exit(0)
