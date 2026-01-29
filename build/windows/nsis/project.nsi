@@ -1,19 +1,8 @@
 Unicode true
 !include "wails_tools.nsh"
-
-VIProductVersion "${INFO_PRODUCTVERSION}.0"
-VIFileVersion    "${INFO_PRODUCTVERSION}.0"
-
-VIAddVersionKey "CompanyName"     "${INFO_COMPANYNAME}"
-VIAddVersionKey "FileDescription" "${INFO_PRODUCTNAME} Installer"
-VIAddVersionKey "ProductVersion"  "${INFO_PRODUCTVERSION}"
-VIAddVersionKey "FileVersion"     "${INFO_PRODUCTVERSION}"
-VIAddVersionKey "LegalCopyright"  "${INFO_COPYRIGHT}"
-VIAddVersionKey "ProductName"     "${INFO_PRODUCTNAME}"
+!include "MUI.nsh"
 
 ManifestDPIAware true
-
-!include "MUI.nsh"
 
 !define MUI_ICON "..\icon.ico"
 !define MUI_UNICON "..\icon.ico"
@@ -31,7 +20,6 @@ ManifestDPIAware true
 Name "${INFO_PRODUCTNAME}"
 OutFile "..\..\bin\${INFO_PROJECTNAME}-${ARCH}-installer.exe"
 
-; Bỏ CompanyName như yêu cầu
 InstallDir "$LOCALAPPDATA\${INFO_PRODUCTNAME}"
 ShowInstDetails show
 
@@ -40,43 +28,37 @@ Function .onInit
 FunctionEnd
 
 Section
-    ; Ép buộc ngữ cảnh là User để có quyền ghi HKCU
+    ; ⚠️ BẮT BUỘC user context để ghi HKCU
     SetShellContext current
 
-    ; 🔥 Kill app cũ
+    ; Kill app cũ
     nsExec::ExecToLog 'taskkill /IM advert.exe /F'
     Sleep 800
 
     SetOutPath $INSTDIR
     !insertmacro wails.files
 
-    ; 🔑 GHI REGISTRY TRƯỚC KHI CHẠY APP
-    ; Dùng HKCU thay vì SHCTX để đảm bảo ghi đúng vào hình bạn chụp
+    ; ✅ AUTO START – GHI CHẮC CHẮN VÀO HKCU\Run
     WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Run" \
       "ForlifeMediaPlayer" '"$INSTDIR\advert.exe"'
 
     CreateShortcut "$SMPROGRAMS\${INFO_PRODUCTNAME}.lnk" "$INSTDIR\advert.exe"
-    CreateShortCut "$DESKTOP\${INFO_PRODUCTNAME}.lnk" "$INSTDIR\advert.exe"
+    CreateShortcut "$DESKTOP\${INFO_PRODUCTNAME}.lnk" "$INSTDIR\advert.exe"
 
-    ; 🚀 Chạy app sau cùng
+    ; Run app
     Exec '"$INSTDIR\advert.exe"'
 
-    !insertmacro wails.associateFiles
-    !insertmacro wails.associateCustomProtocols
     !insertmacro wails.writeUninstaller
 SectionEnd
 
 Section "uninstall"
     SetShellContext current
+
     DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "ForlifeMediaPlayer"
 
     RMDir /r $INSTDIR
-    RMDir /r "$AppData\${INFO_PRODUCTNAME}"
-
     Delete "$SMPROGRAMS\${INFO_PRODUCTNAME}.lnk"
     Delete "$DESKTOP\${INFO_PRODUCTNAME}.lnk"
 
-    !insertmacro wails.unassociateFiles
-    !insertmacro wails.unassociateCustomProtocols
     !insertmacro wails.deleteUninstaller
 SectionEnd
