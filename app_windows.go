@@ -72,7 +72,8 @@ func (a *App) silentUpdate() {
 		return
 	}
 
-	tmp := filepath.Join(os.TempDir(), "advert-update.exe")
+	// Đổi tên file tạm thành advert-setup.exe để tránh trùng với app đang chạy nếu cần
+	tmp := filepath.Join(os.TempDir(), "advert-setup.exe")
 	logger.Println("[Update] Downloading installer to:", tmp)
 
 	out, err := os.Create(tmp)
@@ -80,30 +81,39 @@ func (a *App) silentUpdate() {
 		logger.Println("[Update] Create file error:", err)
 		return
 	}
-	defer out.Close()
+	// Không dùng defer out.Close() ở đây để đảm bảo file được đóng trước khi chạy
 
 	r, err := http.Get(apiRes.Data.URL)
 	if err != nil {
+		out.Close()
 		logger.Println("[Update] Download error:", err)
 		return
 	}
 	defer r.Body.Close()
 
 	if r.StatusCode != http.StatusOK {
+		out.Close()
 		logger.Println("[Update] Download bad status:", r.Status)
 		return
 	}
 
 	if _, err := io.Copy(out, r.Body); err != nil {
+		out.Close()
 		logger.Println("[Update] Write error:", err)
 		return
 	}
+	out.Close() // Đóng file ngay sau khi ghi xong
 
 	logger.Println("[Update] Launching installer silent...")
-	cmd := exec.Command(tmp, "/S")
+	
+	// Sử dụng cmd /C start để bộ cài chạy độc lập hoàn toàn với app hiện tại
+	// Điều này giúp tránh việc installer bị kẹt quyền ghi Registry hoặc ghi đè file .exe
+	cmd := exec.Command("cmd", "/C", "start", "", tmp, "/S")
 	if err := cmd.Start(); err != nil {
 		logger.Println("[Update] Start error:", err)
 		return
 	}
+	
+	logger.Println("[Update] Installer started, exiting app.")
 	os.Exit(0)
 }

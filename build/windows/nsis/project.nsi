@@ -1,5 +1,5 @@
 Unicode true
-RequestExecutionLevel user
+RequestExecutionLevel user ; Ép buộc quyền User để ghi vào HKCU không cần Admin
 
 !include "wails_tools.nsh"
 !include "MUI.nsh"
@@ -22,6 +22,7 @@ ManifestDPIAware true
 Name "${INFO_PRODUCTNAME}"
 OutFile "..\..\bin\${INFO_PROJECTNAME}-${ARCH}-installer.exe"
 
+; Chỉ cài vào ProductName, bỏ CompanyName
 InstallDir "$LOCALAPPDATA\${INFO_PRODUCTNAME}"
 ShowInstDetails show
 
@@ -32,20 +33,23 @@ FunctionEnd
 Section
     SetShellContext current
 
-    ; Kill app cũ
-    nsExec::ExecToLog 'taskkill /IM advert.exe /F'
-    Sleep 800
+    ; 🛠️ FIX 1: Thêm dấu ngoặc kép bao quanh taskkill để tránh lỗi lệnh
+    nsExec::ExecToLog 'taskkill /F /IM "advert.exe" /T'
+    Sleep 1000
 
     SetOutPath $INSTDIR
     !insertmacro wails.files
 
-    ; ✅ AUTO START — GIỜ SẼ GHI ĐÚNG USER HKCU
-    WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Run" \
-      "ForlifeMediaPlayer" '"$INSTDIR\advert.exe"'
-
+    ; Shortcut
     CreateShortcut "$SMPROGRAMS\${INFO_PRODUCTNAME}.lnk" "$INSTDIR\advert.exe"
     CreateShortcut "$DESKTOP\${INFO_PRODUCTNAME}.lnk" "$INSTDIR\advert.exe"
 
+    ; 🔑 FIX 2: AUTO START 
+    ; Ghi trực tiếp vào HKCU (Current User). Dấu ngoặc kép bao quanh path là bắt buộc.
+    WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Run" \
+      "ForlifeMediaPlayer" '"$INSTDIR\advert.exe"'
+
+    ; 🚀 FIX 3: Khởi động lại App
     Exec '"$INSTDIR\advert.exe"'
 
     !insertmacro wails.writeUninstaller
@@ -54,6 +58,7 @@ SectionEnd
 Section "uninstall"
     SetShellContext current
 
+    ; Xóa Registry khi gỡ
     DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "ForlifeMediaPlayer"
 
     RMDir /r $INSTDIR
