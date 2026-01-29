@@ -1,3 +1,19 @@
+//go:build windows
+// +build windows
+
+package main
+
+import (
+	"encoding/json"
+	"io"
+	"log"
+	"net/http"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"time"
+)
+
 func (a *App) enableAutoStart() {
 	// Handled by installer (HKCU\Run)
 }
