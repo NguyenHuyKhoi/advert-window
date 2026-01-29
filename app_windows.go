@@ -26,7 +26,7 @@ func init() {
 		logger = log.New(io.MultiWriter(f, os.Stdout), "", log.LstdFlags)
 		logger.Println("==== Logger started ====")
 	} else {
-		logger = log.New(os.Stdout), "", log.LstdFlags)
+		logger = log.New(os.Stdout, "", log.LstdFlags)
 	}
 }
 
