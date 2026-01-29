@@ -1,4 +1,6 @@
 Unicode true
+RequestExecutionLevel user
+
 !include "wails_tools.nsh"
 !include "MUI.nsh"
 
@@ -28,7 +30,6 @@ Function .onInit
 FunctionEnd
 
 Section
-    ; ⚠️ BẮT BUỘC user context để ghi HKCU
     SetShellContext current
 
     ; Kill app cũ
@@ -38,14 +39,13 @@ Section
     SetOutPath $INSTDIR
     !insertmacro wails.files
 
-    ; ✅ AUTO START – GHI CHẮC CHẮN VÀO HKCU\Run
+    ; ✅ AUTO START — GIỜ SẼ GHI ĐÚNG USER HKCU
     WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Run" \
       "ForlifeMediaPlayer" '"$INSTDIR\advert.exe"'
 
     CreateShortcut "$SMPROGRAMS\${INFO_PRODUCTNAME}.lnk" "$INSTDIR\advert.exe"
     CreateShortcut "$DESKTOP\${INFO_PRODUCTNAME}.lnk" "$INSTDIR\advert.exe"
 
-    ; Run app
     Exec '"$INSTDIR\advert.exe"'
 
     !insertmacro wails.writeUninstaller
