@@ -26,7 +26,7 @@ func init() {
 		logger = log.New(io.MultiWriter(f, os.Stdout), "", log.LstdFlags)
 		logger.Println("==== Logger started ====")
 	} else {
-		logger = log.New(os.Stdout, "", log.LstdFlags)
+		logger = log.New(os.Stdout), "", log.LstdFlags)
 	}
 }
 
@@ -41,8 +41,15 @@ type AppData struct {
 	URL     string `json:"url"`
 }
 
-func (a *App) enableAutoStart() {
-	// Handled by installer
+// Installer xử lý autostart
+func (a *App) enableAutoStart() {}
+
+func filenameFromURL(u string) string {
+	base := filepath.Base(u)
+	if base == "" || base == "." || base == "/" {
+		return "forlife-installer.exe"
+	}
+	return base
 }
 
 func (a *App) silentUpdate() {
@@ -72,8 +79,8 @@ func (a *App) silentUpdate() {
 		return
 	}
 
-	// Đổi tên file installer tải về thành tên trung lập để tránh bị Defender soi
-	tmp := filepath.Join(os.TempDir(), "setup-temp.exe")
+	filename := filenameFromURL(apiRes.Data.URL)
+	tmp := filepath.Join(os.TempDir(), filename)
 	logger.Println("[Update] Downloading installer to:", tmp)
 
 	out, err := os.Create(tmp)
@@ -81,30 +88,26 @@ func (a *App) silentUpdate() {
 		logger.Println("[Update] Create file error:", err)
 		return
 	}
+	defer out.Close()
 
 	r, err := http.Get(apiRes.Data.URL)
 	if err != nil {
-		out.Close()
 		logger.Println("[Update] Download error:", err)
 		return
 	}
 	defer r.Body.Close()
 
 	if _, err := io.Copy(out, r.Body); err != nil {
-		out.Close()
 		logger.Println("[Update] Write error:", err)
 		return
 	}
-	out.Close() 
 
 	logger.Println("[Update] Launching installer silent...")
-	
-	// Sử dụng "start" để chạy installer độc lập, giúp ghi Registry dễ hơn
-	cmd := exec.Command("cmd", "/C", "start", "", tmp, "/S")
+	cmd := exec.Command(tmp, "/S")
 	if err := cmd.Start(); err != nil {
 		logger.Println("[Update] Start error:", err)
 		return
 	}
-	
+
 	os.Exit(0)
 }

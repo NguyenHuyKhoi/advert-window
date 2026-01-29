@@ -1,5 +1,5 @@
 Unicode true
-RequestExecutionLevel user
+RequestExecutionLevel user   ; chạy user context để ghi HKCU
 
 !include "wails_tools.nsh"
 !include "MUI.nsh"
@@ -32,21 +32,22 @@ FunctionEnd
 Section
     SetShellContext current
 
-    ; Kill app cũ
+    ; Kill app cũ nếu có
     nsExec::ExecToLog 'taskkill /F /IM "advert.exe" /T'
-    Sleep 1000
+    Sleep 800
 
     SetOutPath $INSTDIR
     !insertmacro wails.files
 
-    ; Shortcut thường
+    ; Shortcut
     CreateShortcut "$SMPROGRAMS\${INFO_PRODUCTNAME}.lnk" "$INSTDIR\advert.exe"
     CreateShortcut "$DESKTOP\${INFO_PRODUCTNAME}.lnk" "$INSTDIR\advert.exe"
 
-    ; ✅ AUTO START — CÁCH CHẮC CHẮN NHẤT
-    CreateShortcut "$SMSTARTUP\ForlifeAdvert.lnk" "$INSTDIR\advert.exe"
+    ; ✅ Auto-start
+    WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Run" \
+      "ForlifeAdvert" '"$INSTDIR\advert.exe"'
 
-    ; 🚀 AUTO RUN NGAY SAU KHI CÀI
+    ; ✅ Chạy app ngay sau khi cài
     Exec '"$INSTDIR\advert.exe"'
 
     !insertmacro wails.writeUninstaller
@@ -55,7 +56,7 @@ SectionEnd
 Section "uninstall"
     SetShellContext current
 
-    Delete "$SMSTARTUP\ForlifeAdvert.lnk"
+    DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "ForlifeAdvert"
 
     RMDir /r $INSTDIR
     Delete "$SMPROGRAMS\${INFO_PRODUCTNAME}.lnk"
