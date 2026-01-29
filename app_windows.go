@@ -41,7 +41,7 @@ type AppData struct {
 }
 
 func (a *App) enableAutoStart() {
-	// NO-OP on Windows: handled by installer only
+	// Handled by installer
 }
 
 func (a *App) silentUpdate() {
@@ -61,19 +61,11 @@ func (a *App) silentUpdate() {
 		return
 	}
 
-	logger.Printf("[Update] Server=%d Local=%d Success=%v URL=%s\n",
-		apiRes.Data.Version,
-		AppVersionInt,
-		apiRes.Success,
-		apiRes.Data.URL,
-	)
-
 	if !apiRes.Success || apiRes.Data.Version <= AppVersionInt || apiRes.Data.URL == "" {
 		logger.Println("[Update] No update needed")
 		return
 	}
 
-	// GIỮ NGUYÊN: Tên file tải về là advert.exe trong Temp
 	tmp := filepath.Join(os.TempDir(), "advert.exe")
 	logger.Println("[Update] Downloading installer to:", tmp)
 
@@ -100,7 +92,6 @@ func (a *App) silentUpdate() {
 	}
 
 	logger.Println("[Update] Launching installer silent...")
-	// Thực thi bản cài đặt tải về với tham số silent
 	cmd := exec.Command(tmp, "/S")
 	if err := cmd.Start(); err != nil {
 		logger.Println("[Update] Start error:", err)

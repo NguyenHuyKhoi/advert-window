@@ -31,9 +31,8 @@ ManifestDPIAware true
 Name "${INFO_PRODUCTNAME}"
 OutFile "..\..\bin\${INFO_PROJECTNAME}-${ARCH}-installer.exe"
 
-; 🔥 FIX: Bỏ INFO_COMPANYNAME, cài thẳng vào thư mục App
+; Bỏ CompanyName như yêu cầu
 InstallDir "$LOCALAPPDATA\${INFO_PRODUCTNAME}"
-
 ShowInstDetails show
 
 Function .onInit
@@ -41,49 +40,43 @@ Function .onInit
 FunctionEnd
 
 Section
-    !insertmacro wails.setShellContext
+    ; Ép buộc ngữ cảnh là User để có quyền ghi HKCU
+    SetShellContext current
 
-    ; 🔥 Kill running app (advert.exe) để không bị lock file
+    ; 🔥 Kill app cũ
     nsExec::ExecToLog 'taskkill /IM advert.exe /F'
-
     Sleep 800
 
     SetOutPath $INSTDIR
     !insertmacro wails.files
 
-    CreateShortcut "$SMPROGRAMS\${INFO_PRODUCTNAME}.lnk" "$INSTDIR\advert.exe"
-    CreateShortCut "$DESKTOP\${INFO_PRODUCTNAME}.lnk" "$INSTDIR\advert.exe"
-
-    ; 🔑 FIX AUTO-START: 
-    ; 1. Ghi vào HKCU (Current User)
-    ; 2. Sử dụng đúng tên file advert.exe
-    ; 3. Bọc dấu ngoặc kép '"..."' để xử lý khoảng trắng trong đường dẫn Windows
+    ; 🔑 GHI REGISTRY TRƯỚC KHI CHẠY APP
+    ; Dùng HKCU thay vì SHCTX để đảm bảo ghi đúng vào hình bạn chụp
     WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Run" \
       "ForlifeMediaPlayer" '"$INSTDIR\advert.exe"'
 
-    ; 🚀 Relaunch ngay lập tức sau khi cài/update
+    CreateShortcut "$SMPROGRAMS\${INFO_PRODUCTNAME}.lnk" "$INSTDIR\advert.exe"
+    CreateShortCut "$DESKTOP\${INFO_PRODUCTNAME}.lnk" "$INSTDIR\advert.exe"
+
+    ; 🚀 Chạy app sau cùng
     Exec '"$INSTDIR\advert.exe"'
 
     !insertmacro wails.associateFiles
     !insertmacro wails.associateCustomProtocols
-
     !insertmacro wails.writeUninstaller
 SectionEnd
 
 Section "uninstall"
-    !insertmacro wails.setShellContext
-
-    ; Xóa Registry khởi động khi gỡ app
+    SetShellContext current
     DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "ForlifeMediaPlayer"
 
-    RMDir /r "$AppData\${INFO_PRODUCTNAME}"
     RMDir /r $INSTDIR
+    RMDir /r "$AppData\${INFO_PRODUCTNAME}"
 
     Delete "$SMPROGRAMS\${INFO_PRODUCTNAME}.lnk"
     Delete "$DESKTOP\${INFO_PRODUCTNAME}.lnk"
 
     !insertmacro wails.unassociateFiles
     !insertmacro wails.unassociateCustomProtocols
-
     !insertmacro wails.deleteUninstaller
 SectionEnd
