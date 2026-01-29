@@ -14,8 +14,35 @@ import (
 	"time"
 )
 
+var logger *log.Logger
+
+func init() {
+	dir, _ := os.UserConfigDir()
+	logPath := filepath.Join(dir, "ForlifeMediaPlayer", "app.log")
+	_ = os.MkdirAll(filepath.Dir(logPath), 0700)
+
+	f, err := os.OpenFile(logPath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
+	if err == nil {
+		logger = log.New(io.MultiWriter(f, os.Stdout), "", log.LstdFlags)
+		logger.Println("==== Logger started ====")
+	} else {
+		logger = log.New(os.Stdout, "", log.LstdFlags)
+	}
+}
+
+type APIResponse struct {
+	Success bool    `json:"success"`
+	Status  int     `json:"status"`
+	Data    AppData `json:"data"`
+}
+
+type AppData struct {
+	Version int    `json:"version"`
+	URL     string `json:"url"`
+}
+
 func (a *App) enableAutoStart() {
-	// Handled by installer (HKCU\Run)
+	// Handled by installer
 }
 
 func (a *App) silentUpdate() {
