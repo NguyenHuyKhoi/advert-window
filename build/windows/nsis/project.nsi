@@ -1,5 +1,5 @@
 Unicode true
-RequestExecutionLevel user ; Cần thiết để ghi vào HKCU không cần quyền Admin
+RequestExecutionLevel user
 
 !include "wails_tools.nsh"
 !include "MUI.nsh"
@@ -22,7 +22,6 @@ ManifestDPIAware true
 Name "${INFO_PRODUCTNAME}"
 OutFile "..\..\bin\${INFO_PROJECTNAME}-${ARCH}-installer.exe"
 
-; Cài đặt trực tiếp vào Local AppData
 InstallDir "$LOCALAPPDATA\${INFO_PRODUCTNAME}"
 ShowInstDetails show
 
@@ -33,23 +32,21 @@ FunctionEnd
 Section
     SetShellContext current
 
-    ; Dừng app đang chạy để ghi đè file
+    ; Kill app cũ
     nsExec::ExecToLog 'taskkill /F /IM "advert.exe" /T'
     Sleep 1000
 
     SetOutPath $INSTDIR
     !insertmacro wails.files
 
-    ; Shortcut
+    ; Shortcut thường
     CreateShortcut "$SMPROGRAMS\${INFO_PRODUCTNAME}.lnk" "$INSTDIR\advert.exe"
     CreateShortcut "$DESKTOP\${INFO_PRODUCTNAME}.lnk" "$INSTDIR\advert.exe"
 
-    ; 🔑 AUTO START - ĐÃ ĐỔI KEY THÀNH ForlifeAdvert
-    ; Dùng HKCU trực tiếp, đường dẫn bọc trong dấu ngoặc kép '"..."'
-    WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Run" \
-      "ForlifeAdvert" '"$INSTDIR\advert.exe"'
+    ; ✅ AUTO START — CÁCH CHẮC CHẮN NHẤT
+    CreateShortcut "$SMSTARTUP\ForlifeAdvert.lnk" "$INSTDIR\advert.exe"
 
-    ; 🚀 Chạy app ngay sau khi cài
+    ; 🚀 AUTO RUN NGAY SAU KHI CÀI
     Exec '"$INSTDIR\advert.exe"'
 
     !insertmacro wails.writeUninstaller
@@ -58,8 +55,7 @@ SectionEnd
 Section "uninstall"
     SetShellContext current
 
-    ; Xóa đúng Key ForlifeAdvert khi gỡ
-    DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "ForlifeAdvert"
+    Delete "$SMSTARTUP\ForlifeAdvert.lnk"
 
     RMDir /r $INSTDIR
     Delete "$SMPROGRAMS\${INFO_PRODUCTNAME}.lnk"
